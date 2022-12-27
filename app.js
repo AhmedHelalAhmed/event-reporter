@@ -1,3 +1,21 @@
+let executeWait = function (callback, wait) {
+    let timeout,
+        callNow = true;
+
+    return function () {
+        const thisVal = this,
+            args = arguments;
+
+        const later = function () {
+            callNow = true;
+        };
+        if (callNow) {
+            callNow = false;
+            callback.apply(thisVal, args);
+            timeout = setTimeout(later, wait);
+        }
+    };
+};
 
 function init(eObj) {
     var content = document.querySelector("#content"),
@@ -29,17 +47,10 @@ function init(eObj) {
         document.addEventListener("click", clickHandler);
         listeners.push(clickHandler, "click");
 
-        var mouseMoveHandler = function(e) {
-            lastevent = e;
-            if (printIt) {
-                printIt = false;
-                loadInfo("Mouse move recorded at coordinates: " + e.pageX + ", " + e.pageY, e);
-                setTimeout(function() {
-                    printIt = true;
-                }, 500);
-            }
-        };
-       
+        var mouseMoveHandler = executeWait(function(e) {
+            loadInfo("Mouse move recorded at coordinates: " + e.pageX + ", " + e.pageY, e);
+        }, 500);
+
         document.addEventListener("mousemove", mouseMoveHandler);
         listeners.push(mouseMoveHandler, "mousemove");
 
