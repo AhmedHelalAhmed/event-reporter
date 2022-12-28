@@ -1,53 +1,57 @@
-let executeWait = function (callback, wait) {
-    let timeout,
-        callNow = true;
+var HELPERS = HELPERS || {};
+var EVENT_REPORTER_APP = EVENT_REPORTER_APP || {};
 
-    return function () {
-        const thisVal = this,
-            args = arguments;
-
-        const later = function () {
+(function (namespace) {
+    namespace.executeWait = function (callback, wait) {
+        let timeout,
             callNow = true;
-        };
-        if (callNow) {
-            callNow = false;
-            callback.apply(thisVal, args);
-            timeout = setTimeout(later, wait);
-        }
-    };
-};
 
-function init(eObj) {
-    var content = document.querySelector("#content"),
-        listeners = [],
-        listenersEnabled = false,
-        printIt = true, 
-        lastevent;
+        return function () {
+            const thisVal = this,
+                args = arguments;
+
+            const later = function () {
+                callNow = true;
+            };
+            if (callNow) {
+                callNow = false;
+                callback.apply(thisVal, args);
+                timeout = setTimeout(later, wait);
+            }
+        };
+    };
+})(HELPERS);
+
+
+(function (namespace) {
+    let content,
+        listenersEnabled = false;
+    const listeners = [];
 
     //Write info to the div. Includes event object information
-    var loadInfo = function(message, eventObj) {
+    const loadInfo = function (message, eventObj) {
         content.insertAdjacentHTML("afterbegin", message + " -- event type: " + eventObj.type + " -- target object: " + eventObj.target.nodeName + "<br>");
     };
 
     //Adds listeners to the document.
-    var addListeners = function() {
-        var keyDownHandler = function(e) {
+    namespace.addListeners = function () {
+        const keyDownHandler = function (e) {
             loadInfo("A key was pressed: " + e.keyCode + " -- " + e.key, e);
             if (e.keyCode === 83 && e.ctrlKey) {
-                toggleEventListeners();
+                namespace.toggleEventListeners();
             }
         };
         document.addEventListener("keydown", keyDownHandler);
         listeners.push(keyDownHandler, "keydown");
 
 
-        var clickHandler = function(e) {
+        const clickHandler = function (e) {
             loadInfo("Mouse button was clicked: ", e);
         };
         document.addEventListener("click", clickHandler);
         listeners.push(clickHandler, "click");
 
-        var mouseMoveHandler = executeWait(function(e) {
+        const mouseMoveHandler = HELPERS.executeWait(function (e) {
             loadInfo("Mouse move recorded at coordinates: " + e.pageX + ", " + e.pageY, e);
         }, 500);
 
@@ -67,32 +71,31 @@ function init(eObj) {
     };
 
     //Removes listeners from document so user can examine data
-    var removeEventListeners = function() {
+    namespace.removeEventListeners = function () {
         while (listeners.length > 0) {
             document.removeEventListener(listeners.pop(), listeners.pop());
         }
     };
 
     //Called to initialize. Determines whether to add or remove listeners based on current state.
-    var toggleEventListeners = function() {
+    namespace.toggleEventListeners = function () {
         if (listenersEnabled) {
-            removeEventListeners();
+            namespace.removeEventListeners();
             console.log("Event listeners removed");
         } else {
-            addListeners();
+            namespace.addListeners();
             console.log("Listeners Added");
         }
-    }; 
+    };
+    window.addEventListener("load", function (eObj) {
+        content = document.querySelector("#content");
 
-    //Logs information for document load event.
-    loadInfo("Document was loaded: ", eObj);
-
-    //Sets up listeners
-    toggleEventListeners();
-
-}
-
-window.addEventListener("load", init);
+        //Logs information for document load event.
+        loadInfo("Document was loaded: ", eObj);
+        //Sets up listeners
+        namespace.toggleEventListeners();
+    });
+})(EVENT_REPORTER_APP);
 
 
 
