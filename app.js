@@ -58,16 +58,8 @@ var EVENT_REPORTER_APP = EVENT_REPORTER_APP || {};
         document.addEventListener("mousemove", mouseMoveHandler);
         listeners.push(mouseMoveHandler, "mousemove");
 
-        //Use this structure to add your own events for testing.
-        /*var [variableName] = function(e) {
-            loadInfo("Mouse button was clicked: ", e);
-        };
-        document.addEventListener("[event]", [variableName]);
-        listeners.push([variableName], "event");*/
-
         //Once listeners are added, sets this to true for toggle function
         listenersEnabled = true;
-        console.log(mouseMoveHandler);
     };
 
     //Removes listeners from document so user can examine data
@@ -82,6 +74,7 @@ var EVENT_REPORTER_APP = EVENT_REPORTER_APP || {};
         if (listenersEnabled) {
             namespace.removeEventListeners();
             console.log("Event listeners removed");
+            listenersEnabled = false;
         } else {
             namespace.addListeners();
             console.log("Listeners Added");
