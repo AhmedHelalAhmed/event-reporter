@@ -1,44 +1,18 @@
-var HELPERS = HELPERS || {};
-var EVENT_REPORTER_APP = EVENT_REPORTER_APP || {};
-
-(function (namespace) {
-    namespace.executeWait = function (callback, wait) {
-        let timeout,
-            callNow = true;
-
-        return function () {
-            const thisVal = this,
-                args = arguments;
-
-            const later = function () {
-                callNow = true;
-            };
-            if (callNow) {
-                callNow = false;
-                callback.apply(thisVal, args);
-                timeout = setTimeout(later, wait);
-            }
-        };
-    };
-})(HELPERS);
-
-
-(function (namespace) {
+var EVENT_REPORTER_APP = (function (namespace) {
     let content,
         listenersEnabled = false;
     const listeners = [];
-
     //Write info to the div. Includes event object information
     const loadInfo = function (message, eventObj) {
         content.insertAdjacentHTML("afterbegin", message + " -- event type: " + eventObj.type + " -- target object: " + eventObj.target.nodeName + "<br>");
     };
 
     //Adds listeners to the document.
-    namespace.addListeners = function () {
+    const addListeners = function () {
         const keyDownHandler = function (e) {
             loadInfo("A key was pressed: " + e.keyCode + " -- " + e.key, e);
             if (e.keyCode === 83 && e.ctrlKey) {
-                namespace.toggleEventListeners();
+                toggleEventListeners();
             }
         };
         document.addEventListener("keydown", keyDownHandler);
@@ -63,20 +37,20 @@ var EVENT_REPORTER_APP = EVENT_REPORTER_APP || {};
     };
 
     //Removes listeners from document so user can examine data
-    namespace.removeEventListeners = function () {
+    const removeEventListeners = function () {
         while (listeners.length > 0) {
             document.removeEventListener(listeners.pop(), listeners.pop());
         }
     };
 
     //Called to initialize. Determines whether to add or remove listeners based on current state.
-    namespace.toggleEventListeners = function () {
+    const toggleEventListeners = function () {
         if (listenersEnabled) {
-            namespace.removeEventListeners();
+            removeEventListeners();
             console.log("Event listeners removed");
             listenersEnabled = false;
         } else {
-            namespace.addListeners();
+            addListeners();
             console.log("Listeners Added");
         }
     };
@@ -86,9 +60,15 @@ var EVENT_REPORTER_APP = EVENT_REPORTER_APP || {};
         //Logs information for document load event.
         loadInfo("Document was loaded: ", eObj);
         //Sets up listeners
-        namespace.toggleEventListeners();
+        toggleEventListeners();
     });
-})(EVENT_REPORTER_APP);
+
+    // public methods and properties
+    namespace.toggleEventListeners = toggleEventListeners;
+    namespace.addListeners = addListeners;
+    namespace.removeEventListeners = removeEventListeners;
+    return namespace;
+})(EVENT_REPORTER_APP || {});
 
 
 
